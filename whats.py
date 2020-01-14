@@ -18,15 +18,14 @@ def sendMessage(contact,msg):
 	#print contact
 	#x_arg = '//span[contains(@title,' + contact + ')]'
 	#print x_arg
-	
 	#group_title = wait.until(EC.presence_of_element_located((By.XPATH, x_arg)))
-
 	#print ("Wait for few seconds")
 	#group_title.click()
 	
 	x_search = '//html/body/div[1]/div/div/div[3]/div/div[1]/div/label/input'
 	
 	caixa_de_pesquisa = driver.find_element_by_xpath(x_search)
+	caixa_de_pesquisa.clear()
 	caixa_de_pesquisa.send_keys(contact.replace('"',""))
 	time.sleep(2)
 	# Seleciona o contato
@@ -52,16 +51,28 @@ if ans == True:
 	time.sleep(10)
 	
 	while True:
-		print "Buscando Mensagens"
-		response = requests.get("http://vps4782.publiccloud.com.br/send/index.php")
-		json_data = json.loads(response.text)
-		for user in json_data:
-			time.sleep(2)
-			target = '"{}"'.format(user['contato'])
-			string = user['mensagem']
-			sendMessage(target,string)
+		try:
+			print "Buscando Mensagens"
+			response = requests.get("http://vps4782.publiccloud.com.br/send/index.php")
+			json_data = json.loads(response.text)
+			for user in json_data:
+				time.sleep(2)
+				target = '"{}"'.format(user['contato'])
+				string = user['mensagem']
+				sendMessage(target,string)
+				
+				requests.get("http://vps4782.publiccloud.com.br/send/index.php?action=saveStatus&id={}&status=2".format(user['id']))
+			print "Aguardando 10 Segundos"
+			time.sleep(10);
+		except (KeyboardInterrupt, EOFError) as err: 
+			print "Finalizando Programa"
+			exit(0);
+			break;
+		except Exception, e:
+			requests.get("http://vps4782.publiccloud.com.br/send/index.php?action=saveStatus&id={}&status=3".format(user['id']))
+			print "Houve um erro não esperado"
+			print "Aguardando 10 Segundos"
+			time.sleep(10);	
 			
-		print "Aguardando 10 Segundos"
-		time.sleep(10);
 
 driver.close();
